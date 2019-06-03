@@ -18,9 +18,14 @@ const rawBodyBuffer = (req, res, buf, encoding) => {
 app.use(bodyParser.urlencoded({verify: rawBodyBuffer, extended: true }));
 app.use(bodyParser.json({ verify: rawBodyBuffer }));
 
+app.set('port', (process.env.PORT || 9001));
+
+app.listen(app.get('port'), () => {
+    console.log('Server listening on port %s', app.get('port'))
+});
+
 app.post('/', function (req, res) {
     const { command, text, response_url } = req.body;
-    // console.log(command, text);
     if(text.toLowerCase() === 'help'){
         if(command === '/cast'){
             res.send({
@@ -65,19 +70,8 @@ app.post('/', function (req, res) {
     }
 })
 
-// app.listen(3000, function () {
-//     console.log('Example app listening on port 3000!');
-// });
-
-app.set('port', (process.env.PORT || 9001));
-
-app.listen(app.get('port'), () => {
-    console.log('Server listening on port %s', app.get('port'))
-});
-
 function postSpell(text, response_url){
     search_terms = convertText(text).join('+');
-    // console.log(search_terms);
     axios.get('http://www.dnd5eapi.co/api/spells/?name=' + search_terms)
     .then(res => {
         const spell_url = res.data.results[0].url;
@@ -125,10 +119,8 @@ function postFeat(text, response_url){
         });
         return;
     }
-    // console.log(search_terms);
     axios.get('http://www.dnd5eapi.co/api/features')
     .then(res => {
-        // console.log(res.data.results);
         feats = res.data.results;
         for(var i = 0; i < feats.length; i++){
             if(feats[i]['name'] === search_terms){
@@ -174,3 +166,53 @@ function convertText(text){
     }
     return terms;
 }
+
+app.post('/cast', function (req, res) {
+    const { command, text, response_url } = req.body;
+    if(text.toLowerCase() === 'help'){
+        res.send({
+            "response_type": "ephemeral",
+            "text": `Use \`/cast\` to find out about 5th Edition Dungeons and Dragons spells. Some examples include:`,
+            "attachments": [
+                {
+                    "text":"• \`/cast fireball\`\n• \`/cast acid arrow\`\n• \`/cast animate dead\`\n"
+                }
+            ]
+        });
+        return;
+    }
+    // Send empty HTTP 200 to original request
+    res.send('');
+    
+    search_terms = convertText(text).join('+');
+    axios.get('http://www.dnd5eapi.co/api/spells/?name=' + search_terms)
+    .then(res => {
+        const spell_url = res.data.results[0].url;
+        axios.get(spell_url)
+        .then(res => {
+            const spell = `*Spell:* ${res.data.name}\n*Description:* ${res.data.desc.join(' ')}\n*Range:* ${res.data.range}\n*Duration:* ${res.data.duration}\n*Concentration:* ${res.data.concentration}\n*Casting Time:* ${res.data.casting_time}\n*Page:* ${res.data.page}\n`;
+            axios.post(response_url, {
+                "Content-type" : "application/json",
+                "response_type": "ephemeral",
+                "text": spell
+            });
+        })
+        .catch(function (error) {
+            console.log(error);
+        })
+    })
+    .catch(function (error) {
+        // handle error
+        console.log(error);
+        axios.post(response_url, {
+            "Content-type" : "application/json",
+            "response_type": "ephemeral",
+            "text": 'I can\'t seem to find that spell. Check the spelling and try asking again.',
+            "attachments": [
+                {
+                    "text":`You searched for '${text}'.`
+                }
+            ]
+        });
+    })
+})
