@@ -65,10 +65,15 @@ app.post('/', function (req, res) {
     }
 })
 
-app.listen(3000, function () {
-    console.log('Example app listening on port 3000!');
-  });
+// app.listen(3000, function () {
+//     console.log('Example app listening on port 3000!');
+// });
 
+app.set('port', (process.env.PORT || 9001));
+
+app.listen(app.get('port'), () => {
+    console.log('Server listening on port %s', app.get('port'))
+});
 
 function postSpell(text, response_url){
     search_terms = convertText(text).join('+');
@@ -120,7 +125,7 @@ function postFeat(text, response_url){
         });
         return;
     }
-    console.log(search_terms);
+    // console.log(search_terms);
     axios.get('http://www.dnd5eapi.co/api/features')
     .then(res => {
         // console.log(res.data.results);
