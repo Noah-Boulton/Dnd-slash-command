@@ -42,6 +42,19 @@ app.post('/cast', function (req, res) {
     res.send('');
 
     search_terms = convertText(text).join('+');
+    if(search_terms === ''){
+        axios.post(response_url, {
+            "Content-type" : "application/json",
+            "response_type": "ephemeral",
+            "text": '*Critical fail!* Check your spelling and try asking again.',
+            "attachments": [
+                {
+                    "text": 'Make sure you type the name of the spell.'
+                }
+            ]
+        });
+        return;
+    }
     axios.get('http://www.dnd5eapi.co/api/spells/?name=' + search_terms)
     .then(res => {
         const spell_url = res.data.results[0].url;
@@ -64,7 +77,7 @@ app.post('/cast', function (req, res) {
         axios.post(response_url, {
             "Content-type" : "application/json",
             "response_type": "ephemeral",
-            "text": 'I can\'t seem to find that spell. Check the spelling and try asking again.',
+            "text": '*Critical fail!* Check your spelling and try asking again.',
             "attachments": [
                 {
                     "text":`You searched for '${text}'.`
@@ -96,7 +109,7 @@ app.post('/feat', function (req, res) {
         axios.post(response_url, {
             "Content-type" : "application/json",
             "response_type": "ephemeral",
-            "text": 'I can\'t seem to find that feature. Check the spelling and try asking again.',
+            "text": '*Critical fail!* Check your spelling and try asking again.',
             "attachments": [
                 {
                     "text": 'Make sure you type the name of the feature.'
@@ -117,7 +130,7 @@ app.post('/feat', function (req, res) {
             axios.post(response_url, {
                 "Content-type" : "application/json",
                 "response_type": "ephemeral",
-                "text": 'I can\'t seem to find that feature. Check the spelling and try asking again.',
+                "text": '*Critical fail!* Check your spelling and try asking again.',
                 "attachments": [
                     {
                         "text": `You searched for '${search_terms}'.`
