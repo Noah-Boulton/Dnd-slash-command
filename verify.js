@@ -1,5 +1,5 @@
 const crypto = require('crypto');
-const qs = require(‘qs’);
+const qs = require('qs');
 
 function verify(request){
     const slack_signature = request.headers['x-slack-signature'];
