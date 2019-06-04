@@ -1,20 +1,22 @@
 const crypto = require('crypto');
+const qs = require(‘qs’);
 
 function verify(request){
-    console.log(request.headers);
-    timestamp = request.headers['x-slack-request-timestamp'];
-    request_body = request.body;
-    sig_basestring = 'v0:' + timestamp + ':' + request_body;
+    const slack_signature = request.headers['x-slack-signature'];
+    const timestamp = request.headers['x-slack-request-timestamp'];
+    const request_body = qs.stringify(req.body,{ format:'RFC1738' });
+    const sig_basestring = 'v0:' + timestamp + ':' + request_body;
 
-    const hmac = crypto.createHmac('sha256', process.env.SIGNING_SECRET);
-    my_signature = 'v0=' + hmac.update(sig_basestring).digest('hex');
-    slack_signature = request.headers['x-slack-signature'];
+    const my_signature = 'v0=' + 
+                        crypto.createHmac('sha256', process.env.SIGNING_SECRET)
+                        .update(sigBasestring, 'utf8')
+                        .digest('hex');
     // console.log(request);
     console.log(my_signature);
     console.log(slack_signature);
-    // if (crypto.timingSafeEqual(Buffer.from(my_signature, 'utf8'), Buffer.from(slack_signature, 'utf8'))){
-    //     console.log('safe');
-    // }
+    if (crypto.timingSafeEqual(Buffer.from(mySignature, 'utf8'), Buffer.from(slackSignature, 'utf8'))){
+        console.log('Vefified');
+    } 
 }
 
 exports.verify = verify;
