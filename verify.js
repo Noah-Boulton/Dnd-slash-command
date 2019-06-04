@@ -1,7 +1,8 @@
 const crypto = require('crypto');
 
 function verify(request){
-    timestamp = request.headers['X-Slack-Request-Timestamp'];
+    console.log(request.headers);
+    timestamp = request.headers['x-slack-request-timestamp'];
     request_body = request.body;
     sig_basestring = 'v0:' + timestamp + ':' + request_body;
 
