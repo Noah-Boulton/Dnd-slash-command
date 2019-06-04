@@ -21,6 +21,9 @@ app.use(bodyParser.json({ verify: rawBodyBuffer }));
 
 app.set('port', (process.env.PORT || 9001));
 
+//For local testing
+// app.set('port', (3000));
+
 app.listen(app.get('port'), () => {
     console.log('Server listening on port %s', app.get('port'))
 });

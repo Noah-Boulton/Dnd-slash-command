@@ -9,12 +9,12 @@ function verify(request){
 
     const my_signature = 'v0=' + 
                         crypto.createHmac('sha256', process.env.SIGNING_SECRET)
-                        .update(sigBasestring, 'utf8')
+                        .update(sig_basestring, 'utf8')
                         .digest('hex');
     // console.log(request);
     console.log(my_signature);
     console.log(slack_signature);
-    if (crypto.timingSafeEqual(Buffer.from(mySignature, 'utf8'), Buffer.from(slackSignature, 'utf8'))){
+    if (crypto.timingSafeEqual(Buffer.from(my_signature, 'utf8'), Buffer.from(slack_signature, 'utf8'))){
         console.log('Vefified');
     } 
 }
