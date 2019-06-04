@@ -2,7 +2,7 @@ const crypto = require('crypto');
 
 function verify(request){
     timestamp = request.headers['X-Slack-Request-Timestamp'];
-    request_body = request.body();
+    request_body = request.body;
     sig_basestring = 'v0:' + timestamp + ':' + request_body;
 
     const hmac = crypto.createHmac('sha256', process.env.SIGNING_SECRET);
