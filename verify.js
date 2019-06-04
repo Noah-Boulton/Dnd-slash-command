@@ -12,9 +12,9 @@ function verify(request){
     // console.log(request);
     console.log(my_signature);
     console.log(slack_signature);
-    if (crypto.timingSafeEqual(Buffer.from(my_signature, 'utf8'), Buffer.from(slack_signature, 'utf8'))){
-        console.log('safe');
-    }
+    // if (crypto.timingSafeEqual(Buffer.from(my_signature, 'utf8'), Buffer.from(slack_signature, 'utf8'))){
+    //     console.log('safe');
+    // }
 }
 
 exports.verify = verify;
