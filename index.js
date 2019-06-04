@@ -26,7 +26,7 @@ app.listen(app.get('port'), () => {
 });
 
 app.post('/cast', function (req, res) {
-    verify(req);
+    verify.verify(req);
     const { command, text, response_url } = req.body;
     if(text.toLowerCase() === 'help'){
         res.send({
