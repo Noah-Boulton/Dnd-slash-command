@@ -4,7 +4,7 @@ const qs = require('qs');
 function verify(request){
     const slack_signature = request.headers['x-slack-signature'];
     const timestamp = request.headers['x-slack-request-timestamp'];
-    const request_body = qs.stringify(req.body,{ format:'RFC1738' });
+    const request_body = qs.stringify(request.body,{ format:'RFC1738' });
     const sig_basestring = 'v0:' + timestamp + ':' + request_body;
 
     const my_signature = 'v0=' + 
