@@ -8,7 +8,7 @@ function verify(request, res) {
     const sig_basestring = 'v0:' + timestamp + ':' + request_body;
 
     const my_signature = 'v0=' +
-        crypto.createHmac('sha256', 'b4c265244321b7decd02cd76398abcf3')
+        crypto.createHmac('sha256', process.env.SIGNING_SECRET)
             .update(sig_basestring, 'utf8')
             .digest('hex');
 
