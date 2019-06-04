@@ -1,6 +1,7 @@
-var express = require('express');
-var app = express();
+const express = require('express');
+const app = express();
 const axios = require('axios');
+const verify = require('./verify');
 const bodyParser = require('body-parser');
 
 /*
@@ -25,7 +26,7 @@ app.listen(app.get('port'), () => {
 });
 
 app.post('/cast', function (req, res) {
-    console.log(res);
+    
     const { command, text, response_url } = req.body;
     if(text.toLowerCase() === 'help'){
         res.send({
