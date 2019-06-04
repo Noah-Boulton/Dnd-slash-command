@@ -63,7 +63,8 @@ app.post('/cast', function (req, res) {
                     const spell_url = res.data.results[0].url;
                     axios.get(spell_url)
                         .then(res => {
-                            const spell = `*Spell:* ${res.data.name}\n*Description:* ${res.data.desc.join('\n')}\n*Range:* ${res.data.range}\n*Duration:* ${res.data.duration}\n*Concentration:* ${res.data.concentration}\n*Casting Time:* ${res.data.casting_time}\n*Page:* ${res.data.page}\n`;
+                            var desc = es.data.desc.join('\n');
+                            const spell = `*Spell:* ${res.data.name}\n*Description:* ${desc.replace('â€™', '\'')}\n*Range:* ${res.data.range}\n*Duration:* ${res.data.duration}\n*Concentration:* ${res.data.concentration}\n*Casting Time:* ${res.data.casting_time}\n*Page:* ${res.data.page}\n`;
                             axios.post(response_url, {
                                 "Content-type": "application/json",
                                 "response_type": "ephemeral",
@@ -150,7 +151,8 @@ app.post('/feat', function (req, res) {
                     }
                     axios.get(url)
                         .then(res => {
-                            const feat = `*Feat:* ${res.data.name}\n*Description:* ${res.data.desc.join('\n')}\n`;
+                            var desc = es.data.desc.join('\n');
+                            const feat = `*Feat:* ${res.data.name}\n*Description:* ${desc.replace('â€™', '\'')}\n`;
                             axios.post(response_url, {
                                 "Content-type": "application/json",
                                 "response_type": "ephemeral",
