@@ -70,9 +70,10 @@ app.post('/cast', function (req, res) {
                             const concentration = res.data.concentration ? res.data.concentration  : '';
                             const casting_time = res.data.casting_time ? res.data.casting_time : '';
                             const higher_levels = res.data.higher_level ? res.data.higher_level : '';
+                            const level = res.data.level ? res.data.level : '';
                             const ritual = res.data.ritual ? res.data.ritual : '';
                             const page = res.data.page ? res.data.page : '';
-                            const spell = `*Spell:* ${name}\n*Description:* ${desc.replace('â€™', '\'')}\n*Range:* ${range}\n*Higher Levels:* ${higher_levels}\n*Duration:* ${duration}\n*Concentration:* ${concentration}\n*Casting Time:* ${casting_time}\n*Ritual:* ${ritual}\n*Page:* ${page}\n`;
+                            const spell = `*Spell:* ${name}\n*Description:* ${desc.replace('â€™', '\'')}\n*Range:* ${range}\n*Higher Levels:* ${higher_levels}\n*Level:* ${level}\n*Duration:* ${duration}\n*Concentration:* ${concentration}\n*Casting Time:* ${casting_time}\n*Ritual:* ${ritual}\n*Page:* ${page}\n`;
                             axios.post(response_url, {
                                 "Content-type": "application/json",
                                 "response_type": "ephemeral",
