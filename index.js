@@ -218,7 +218,7 @@ app.post('/condition', function (req, res) {
                                 "text": condition,
                                 "attachments": [
                                     {
-                                        "text": `${desc.replace('â€™', '\'')}`;
+                                        "text": `${desc.replace('â€™', '\'')}`
                                     }
                                 ]
                             });
