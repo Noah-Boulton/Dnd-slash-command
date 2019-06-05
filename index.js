@@ -211,11 +211,16 @@ app.post('/condition', function (req, res) {
                         .then(res => {
                             const name = res.data.name ? res.data.name : '';
                             const desc = res.data.desc.join('\n');
-                            const feat = `*Condition:* ${name}\n*Description:* ${desc.replace('â€™', '\'')}\n`;
+                            const condition = `*Condition:* ${name}`;
                             axios.post(response_url, {
                                 "Content-type": "application/json",
                                 "response_type": "ephemeral",
-                                "text": feat
+                                "text": condition,
+                                "attachments": [
+                                    {
+                                        "text": `${desc.replace('â€™', '\'')}`;
+                                    }
+                                ]
                             });
                         })
                         .catch(function (error) {
