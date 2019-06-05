@@ -152,7 +152,7 @@ async function condition(req, res) {
             return
         }
         const condition_data = await axios.get(url);
-        const condition = `*Condition:* ${ondition_data.data.name}`;
+        const condition = `*Condition:* ${condition_data.data.name}`;
         axios.post(response_url, {
             "Content-type": "application/json",
             "response_type": "ephemeral",
