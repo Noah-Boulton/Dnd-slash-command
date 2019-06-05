@@ -11,7 +11,6 @@ function verify(request, res) {
         crypto.createHmac('sha256', process.env.SIGNING_SECRET)
             .update(sig_basestring, 'utf8')
             .digest('hex');
-
     return new Promise(function (resolve, reject) {
         if (crypto.timingSafeEqual(Buffer.from(my_signature, 'utf8'), Buffer.from(slack_signature, 'utf8'))) {
             resolve(res);

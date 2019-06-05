@@ -5,9 +5,10 @@ async function cast(req, res) {
     try {
         await helpers.verify(req, res);
     } catch (error) {
-        return response.status(400).send(error);
+        console.error(error);
+        return res.status(400).send(error);
     }
-    const { command, text, response_url } = req.body;
+    const { text, response_url } = req.body;
     if (text.toLowerCase() === 'help') {
         res.send({
             "response_type": "ephemeral",
@@ -23,18 +24,17 @@ async function cast(req, res) {
     // Send empty HTTP 200 to original request
     res.send('');
 
-    const search_terms = helpers.convertText(text).join('+');
-    if (search_terms === '') {
+    try {
+        const search_terms = helpers.convertText(text).join('+');
+        const spell_list = await axios.get('http://www.dnd5eapi.co/api/spells/?name=' + search_terms);
+        const spell_url = spell_list.data.results[0].url;
+        const spell_data = await axios.get(spell_url);
+        const spell = `*Spell:* ${spell_data.data.name}\n*Description:* ${spell_data.data.desc.join('\n').replace('â€™', '\'')}\n*Higher Levels:* ${spell_data.data.higher_level}\n*Range:* ${spell_data.data.range}\n*Level:* ${spell_data.data.level}\n*Duration:* ${spell_data.data.duration}\n*Concentration:* ${spell_data.data.concentration}\n*Casting Time:* ${spell_data.data.casting_time}\n*Ritual:* ${spell_data.data.ritual}\n*Page:* ${spell_data.data.page}\n`;
         axios.post(response_url, {
             "Content-type": "application/json",
             "response_type": "ephemeral",
-            "text": '*Critical fail!* Check your spelling and try asking again.'
+            "text": spell
         });
-        return;
-    }
-    let spell_list;
-    try {
-        spell_list = await axios.get('http://www.dnd5eapi.co/api/spells/?name=' + search_terms);
     } catch (error) {
         console.log(error);
         axios.post(response_url, {
@@ -43,30 +43,136 @@ async function cast(req, res) {
             "text": '*Critical fail!* Check your spelling and try asking again.'
         });
     }
+}
 
-    const spell_url = spell_list.data.results[0].url;
-    let spell_data;
+async function feat(req, res) {
     try {
-        spell_data = await axios.get(spell_url);
+        await helpers.verify(req, res);
     } catch (error) {
         console.error(error);
+        return res.status(400).send(error);
     }
-    const name = spell_data.data.name ? spell_data.data.name : '';
-    const desc = spell_data.data.desc.join('\n');
-    const range = spell_data.data.range ? spell_data.data.range : '';
-    const duration = spell_data.data.duration ? spell_data.data.duration : '';
-    const concentration = spell_data.data.concentration ? spell_data.data.concentration : '';
-    const casting_time = spell_data.data.casting_time ? spell_data.data.casting_time : '';
-    const higher_levels = spell_data.data.higher_level ? spell_data.data.higher_level : '';
-    const level = spell_data.data.level ? rspell_dataes.data.level : '';
-    const ritual = spell_data.data.ritual ? spell_data.data.ritual : '';
-    const page = spell_data.data.page ? spell_data.data.page : '';
-    const spell = `*Spell:* ${name}\n*Description:* ${desc.replace('â€™', '\'')}\n*Higher Levels:* ${higher_levels}\n*Range:* ${range}\n*Level:* ${level}\n*Duration:* ${duration}\n*Concentration:* ${concentration}\n*Casting Time:* ${casting_time}\n*Ritual:* ${ritual}\n*Page:* ${page}\n`;
-    axios.post(response_url, {
-        "Content-type": "application/json",
-        "response_type": "ephemeral",
-        "text": spell
-    });
+    const { text, response_url } = req.body;
+
+    if (text.toLowerCase() === 'help') {
+        res.send({
+            "response_type": "ephemeral",
+            "text": `Use \`/feat\` to find out about 5th Edition Dungeons and Dragons features. Some examples include:`,
+            "attachments": [
+                {
+                    "text": "• \`/feat rage\`\n• \`/feat danger sense\`\n• \`/feat intimidating presence\`\n"
+                }
+            ]
+        });
+        return;
+    }
+    // Send empty HTTP 200 to original request
+    res.send('');
+
+    try {
+        const search_terms = helpers.convertText(text).join(' ');
+        const feat_list = await axios.get('http://www.dnd5eapi.co/api/features');
+        const feats = feat_list.data.results;
+        let url;
+        for (var i = 0; i < feats.length; i++) {
+            if (feats[i]['name'] === search_terms) {
+                url = feats[i]['url'];
+            }
+        }
+        if (url === undefined) {
+            axios.post(response_url, {
+                "Content-type": "application/json",
+                "response_type": "ephemeral",
+                "text": '*Critical fail!* Check your spelling and try asking again.'
+            });
+            return;
+        }
+        const feat_data = await axios.get(url);
+        const feat = `*Feat:* ${feat_data.data.name}\n*Description:* ${feat_data.data.desc.join('\n').replace('â€™', '\'')}\n`;
+        axios.post(response_url, {
+            "Content-type": "application/json",
+            "response_type": "ephemeral",
+            "text": feat
+        });
+    } catch (error) {
+        console.log(error);
+        axios.post(response_url, {
+            "Content-type": "application/json",
+            "response_type": "ephemeral",
+            "text": '*Critical fail!* Check your spelling and try asking again.'
+        });
+    }
+}
+
+async function condition(req, res) {
+    try {
+        await helpers.verify(req, res);
+    } catch (error) {
+        console.error(error);
+        return res.status(400).send(error);
+    }
+    const { text, response_url } = req.body;
+    if (text.toLowerCase() === 'help') {
+        res.send({
+            "response_type": "ephemeral",
+            "text": `Use \`/condition\` to find out about 5th Edition Dungeons and Dragons conditions. Some examples include:`,
+            "attachments": [
+                {
+                    "text": "• \`/condition blinded\`\n• \`/condition petrified\`\n• \`/condition stunned\`\n"
+                }
+            ]
+        });
+        return;
+    }
+    // Send empty HTTP 200 to original request
+    res.send('');
+    try {
+        const search_terms = helpers.convertText(text).join(' ');
+        if (search_terms === '') {
+            axios.post(response_url, {
+                "Content-type": "application/json",
+                "response_type": "ephemeral",
+                "text": '*Critical fail!* Check your spelling and try asking again.'
+            });
+            return;
+        }
+        const condition_list = await axios.get('http://www.dnd5eapi.co/api/conditions');
+        const conditions = condition_list.data.results
+        for (var i = 0; i < conditions.length; i++) {
+            if (conditions[i]['name'] === search_terms) {
+                var url = conditions[i]['url'];
+            }
+        }
+        if (url === undefined) {
+            axios.post(response_url, {
+                "Content-type": "application/json",
+                "response_type": "ephemeral",
+                "text": '*Critical fail!* Check your spelling and try asking again.'
+            });
+            return
+        }
+        const condition_data = await axios.get(url);
+        const condition = `*Condition:* ${ondition_data.data.name}`;
+        axios.post(response_url, {
+            "Content-type": "application/json",
+            "response_type": "ephemeral",
+            "text": condition,
+            "attachments": [
+                {
+                    "text": `${condition_data.data.desc.join('\n').replace('â€™', '\'')}`
+                }
+            ]
+        });
+    } catch (error) {
+        console.error(error);
+        axios.post(response_url, {
+            "Content-type": "application/json",
+            "response_type": "ephemeral",
+            "text": '*Critical fail!* Check your spelling and try asking again.'
+        });
+    }
 }
 
 exports.cast = cast;
+exports.feat = feat;
+exports.condition = condition;
