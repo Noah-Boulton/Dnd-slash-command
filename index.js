@@ -63,8 +63,16 @@ app.post('/cast', function (req, res) {
                     const spell_url = res.data.results[0].url;
                     axios.get(spell_url)
                         .then(res => {
-                            var desc = res.data.desc.join('\n');
-                            const spell = `*Spell:* ${res.data.name}\n*Description:* ${desc.replace('â€™', '\'')}\n*Range:* ${res.data.range}\n*Duration:* ${res.data.duration}\n*Concentration:* ${res.data.concentration}\n*Casting Time:* ${res.data.casting_time}\n*Page:* ${res.data.page}\n`;
+                            const name = res.data.name ? res.data.name : '';
+                            const desc = res.data.desc.join('\n');
+                            const range = res.data.range ? res.data.range  : '';
+                            const duration = res.data.duration ? res.data.duration : '';
+                            const concentration = res.data.concentration ? res.data.concentration  : '';
+                            const casting_time = res.data.casting_time ? res.data.casting_time : '';
+                            const higher_levels = res.data.higher_level ? res.data.higher_level : '';
+                            const ritual = res.data.ritual ? res.data.ritual : '';
+                            const page = res.data.page ? res.data.page : '';
+                            const spell = `*Spell:* ${name}\n*Description:* ${desc.replace('â€™', '\'')}\n*Range:* ${range}\n*Duration:* ${duration}*Higher Levels:* ${higher_levels}\n*Concentration:* ${concentration}\n*Casting Time:* ${casting_time}\n*Ritual:* ${ritual}\n*Page:* ${page}\n`;
                             axios.post(response_url, {
                                 "Content-type": "application/json",
                                 "response_type": "ephemeral",
