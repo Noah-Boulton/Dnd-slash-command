@@ -2,6 +2,7 @@ const express = require('express');
 const app = express();
 const routes = require('./routes');
 const bodyParser = require('body-parser');
+var Datastore = require('nedb');
 
 /*
  * Parse application/x-www-form-urlencoded && application/json
@@ -14,6 +15,8 @@ const rawBodyBuffer = (req, res, buf, encoding) => {
         req.rawBody = buf.toString(encoding || 'utf8');
     }
 };
+
+const database = new Datastore({ filename: 'database.db', autoload: true });
 
 app.use(bodyParser.urlencoded({ verify: rawBodyBuffer, extended: true }));
 app.use(bodyParser.json({ verify: rawBodyBuffer }));
@@ -34,4 +37,8 @@ app.post('/feat', function (req, res) {
 
 app.post('/condition', function (req, res) {
     routes.condition(req, res);
+})
+
+app.post('/gold', function (req, res) {
+    routes.gold(req, res, database);
 })

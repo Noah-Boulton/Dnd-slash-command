@@ -7,3 +7,6 @@ logs
 npm-debug.log*
 
 .cache
+
+# Database files
+database.db

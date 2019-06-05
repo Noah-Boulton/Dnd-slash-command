@@ -173,6 +173,94 @@ async function condition(req, res) {
     }
 }
 
+async function gold(req, res, database) {
+    try {
+        await helpers.verify(req, res);
+    } catch (error) {
+        console.error(error);
+        return res.status(400).send(error);
+    }
+    const { text, user_id, response_url} = req.body;
+    if(text.toLowerCase() === 'help') {
+        res.send({
+            "response_type": "ephemeral",
+            "text": `Use \`/gold\` to get and update your gold balance. Some examples include:`,
+            "attachments": [
+                {
+                    "text": "• \`/gold\`\n• \`/gold 100\`\n• \`/gold -10\`\n"
+                }
+            ]
+        });
+        return;
+    }
+
+    // Send empty HTTP 200 to original request
+    res.send('');
+    if(text === '') {
+        database.find({ user_id: user_id }, function (err, docs) {
+            if(docs.length !== 0){
+                axios.post(response_url, {
+                    "Content-type": "application/json",
+                    "response_type": "ephemeral",
+                    "text": `*Gold:* ${docs[docs.length-1].amount}`
+                });
+            } else {
+                axios.post(response_url, {
+                    "Content-type": "application/json",
+                    "response_type": "ephemeral",
+                    "text": `*Critical fail!* You don't have any gold in the bank yet.`,
+                    "attachments": [
+                        {
+                            "text": "Try adding some using \`/gold [amount]\`"
+                        }
+                    ]
+                });
+            }
+        });
+        return;
+    }
+    
+    try {
+        // console.log(user_id);
+        const amount = Number.parseInt(text, 10);
+        if(Number.isNaN(amount)){
+            axios.post(response_url, {
+                "Content-type": "application/json",
+                "response_type": "ephemeral",
+                "text": '*Critical fail!* Make sure you supply an integer'
+            });
+            return;
+        }
+        database.find({ user_id: user_id }, function (err, docs) {
+            // console.log(docs);
+            if(docs.length !== 0){
+                database.update({ user_id: user_id  }, { user_id: user_id , amount: docs[docs.length-1].amount + amount}, {}, function (err, numReplaced) {});
+                // console.log('Last doc: ', docs[docs.length-1]);
+                const balance = docs[docs.length-1].amount + amount;
+                axios.post(response_url, {
+                    "Content-type": "application/json",
+                    "response_type": "ephemeral",
+                    "text": `*Gold: * ${balance}`
+                });
+            } else {
+                const statement = { user_id: user_id,
+                                    amount: amount};
+                database.insert(statement);
+                const balance = amount;
+                axios.post(response_url, {
+                    "Content-type": "application/json",
+                    "response_type": "ephemeral",
+                    "text": `*Gold: * ${balance}`
+                });
+            }
+        });
+    } catch (erorr) {
+        console.error(error);
+        return res.status(400).send(error);
+    }
+}
+
 exports.cast = cast;
 exports.feat = feat;
 exports.condition = condition;
+exports.gold = gold;
