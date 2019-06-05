@@ -49,12 +49,7 @@ app.post('/cast', function (req, res) {
                 axios.post(response_url, {
                     "Content-type": "application/json",
                     "response_type": "ephemeral",
-                    "text": '*Critical fail!* Check your spelling and try asking again.',
-                    "attachments": [
-                        {
-                            "text": 'Make sure you type the name of the spell.'
-                        }
-                    ]
+                    "text": '*Critical fail!* Check your spelling and try asking again.'
                 });
                 return;
             }
@@ -90,12 +85,7 @@ app.post('/cast', function (req, res) {
                     axios.post(response_url, {
                         "Content-type": "application/json",
                         "response_type": "ephemeral",
-                        "text": '*Critical fail!* Check your spelling and try asking again.',
-                        "attachments": [
-                            {
-                                "text": `You searched for '${text}'.`
-                            }
-                        ]
+                        "text": '*Critical fail!* Check your spelling and try asking again.'
                     });
                 })
         })
@@ -128,12 +118,7 @@ app.post('/feat', function (req, res) {
                 axios.post(response_url, {
                     "Content-type": "application/json",
                     "response_type": "ephemeral",
-                    "text": '*Critical fail!* Check your spelling and try asking again.',
-                    "attachments": [
-                        {
-                            "text": 'Make sure you type the name of the feature.'
-                        }
-                    ]
+                    "text": '*Critical fail!* Check your spelling and try asking again.'
                 });
                 return;
             }
@@ -149,19 +134,84 @@ app.post('/feat', function (req, res) {
                         axios.post(response_url, {
                             "Content-type": "application/json",
                             "response_type": "ephemeral",
-                            "text": '*Critical fail!* Check your spelling and try asking again.',
-                            "attachments": [
-                                {
-                                    "text": `You searched for '${search_terms}'.`
-                                }
-                            ]
+                            "text": '*Critical fail!* Check your spelling and try asking again.'
                         });
                         return
                     }
                     axios.get(url)
                         .then(res => {
-                            var desc = res.data.desc.join('\n');
-                            const feat = `*Feat:* ${res.data.name}\n*Description:* ${desc.replace('â€™', '\'')}\n`;
+                            const name = res.data.name ? res.data.name : '';
+                            const desc = res.data.desc.join('\n');
+                            const feat = `*Feat:* ${name}\n*Description:* ${desc.replace('â€™', '\'')}\n`;
+                            axios.post(response_url, {
+                                "Content-type": "application/json",
+                                "response_type": "ephemeral",
+                                "text": feat
+                            });
+                        })
+                        .catch(function (error) {
+                            console.log(error);
+                        })
+                })
+                .catch(function (error) {
+                    // handle error
+                    console.log(error);
+                })
+        })
+        .catch(res => {
+            console.log('Unknown request');
+        })
+})
+
+app.post('/condition', function (req, res) {
+    helpers.verify(req, res)
+        .then(res => {
+            const { command, text, response_url } = req.body;
+            if (text.toLowerCase() === 'help') {
+                res.send({
+                    "response_type": "ephemeral",
+                    "text": `Use \`/condition\` to find out about 5th Edition Dungeons and Dragons conditions. Some examples include:`,
+                    "attachments": [
+                        {
+                            "text": "• \`/condition blinded\`\n• \`/condition petrified\`\n• \`/condition stunned\`\n"
+                        }
+                    ]
+                });
+                return;
+            }
+            // Send empty HTTP 200 to original request
+            res.send('');
+
+            search_terms = helpers.convertText(text).join(' ');
+            if (search_terms === '') {
+                axios.post(response_url, {
+                    "Content-type": "application/json",
+                    "response_type": "ephemeral",
+                    "text": '*Critical fail!* Check your spelling and try asking again.'
+                });
+                return;
+            }
+            axios.get('http://www.dnd5eapi.co/api/conditions')
+                .then(res => {
+                    conditions = res.data.results;
+                    for (var i = 0; i < conditions.length; i++) {
+                        if (conditions[i]['name'] === search_terms) {
+                            var url = conditions[i]['url'];
+                        }
+                    }
+                    if (url === undefined) {
+                        axios.post(response_url, {
+                            "Content-type": "application/json",
+                            "response_type": "ephemeral",
+                            "text": '*Critical fail!* Check your spelling and try asking again.'
+                        });
+                        return
+                    }
+                    axios.get(url)
+                        .then(res => {
+                            const name = res.data.name ? res.data.name : '';
+                            const desc = res.data.desc.join('\n');
+                            const feat = `*Condition:* ${name}\n*Description:* ${desc.replace('â€™', '\'')}\n`;
                             axios.post(response_url, {
                                 "Content-type": "application/json",
                                 "response_type": "ephemeral",
