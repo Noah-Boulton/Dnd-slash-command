@@ -17,6 +17,7 @@ const rawBodyBuffer = (req, res, buf, encoding) => {
 };
 
 const database = new Datastore({ filename: 'database.db', autoload: true });
+database.persistence.setAutocompactionInterval(420000);
 
 app.use(bodyParser.urlencoded({ verify: rawBodyBuffer, extended: true }));
 app.use(bodyParser.json({ verify: rawBodyBuffer }));
