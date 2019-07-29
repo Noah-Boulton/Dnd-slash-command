@@ -208,7 +208,7 @@ async function gold(req, res, database) {
                 axios.post(response_url, {
                     "Content-type": "application/json",
                     "response_type": "ephemeral",
-                    "text": `*Critical fail!* You don't have any gold in the bank yet.`,
+                    "text": `*Critical fail!* You don't have any gold in the bank!`,
                     "attachments": [
                         {
                             "text": "Try adding some using \`/gold [amount]\`"
