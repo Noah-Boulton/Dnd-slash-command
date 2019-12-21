@@ -3,6 +3,7 @@ const app = express();
 const routes = require('./routes');
 const bodyParser = require('body-parser');
 var Datastore = require('nedb');
+const dotenv = require('dotenv').config();
 
 /*
  * Parse application/x-www-form-urlencoded && application/json

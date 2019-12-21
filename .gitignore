@@ -10,3 +10,7 @@ npm-debug.log*
 
 # Database files
 database.db
+
+.DS_Store
+
+.env

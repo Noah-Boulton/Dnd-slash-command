@@ -1,5 +1,6 @@
 const helpers = require('./helpers');
 const axios = require('axios');
+const mongodb = require('mongodb');
 
 async function cast(req, res) {
     try {
@@ -180,31 +181,37 @@ async function gold(req, res, database) {
         console.error(error);
         return res.status(400).send(error);
     }
-    const { text, user_id, response_url} = req.body;
-    if(text.toLowerCase() === 'help') {
-        res.send({
-            "response_type": "ephemeral",
-            "text": `Use \`/gold\` to get and update your gold balance. Some examples include:`,
-            "attachments": [
-                {
-                    "text": "• \`/gold\`\n• \`/gold 100\`\n• \`/gold -10\`\n"
-                }
-            ]
-        });
-        return;
-    }
-
-    // Send empty HTTP 200 to original request
     res.send('');
-    if(text === '') {
-        database.find({ user_id: user_id }, function (err, docs) {
-            if(docs.length !== 0){
+    const { text, user_id, response_url} = req.body;
+
+    switch (text.toLowerCase()) {
+        case 'help' :
+            res.send({
+                "response_type": "ephemeral",
+                "text": `Use \`/gold\` to get and update your gold balance. Some examples include:`,
+                "attachments": [
+                    {
+                        "text": "• \`/gold\`\n• \`/gold 100\`\n• \`/gold -10\`\n"
+                    }
+                ]
+            });
+            return;
+        case '' :
+            const client = await mongodb.MongoClient.connect(process.env.DATABASE_CONNECTION_STRING, {useUnifiedTopology: true, useNewUrlParser: true });
+            const gold = client.db('dnd_app').collection('gold');
+            const record = await gold.findOne({user_id: user_id});
+            
+            if (record) {
                 axios.post(response_url, {
                     "Content-type": "application/json",
                     "response_type": "ephemeral",
-                    "text": `*Gold:* ${docs[docs.length-1].amount}`
+                    "text": `*Gold:* ${record.amount}`
                 });
             } else {
+                gold.insertOne({
+                    user_id: user_id,
+                    amount: 0,
+                });
                 axios.post(response_url, {
                     "Content-type": "application/json",
                     "response_type": "ephemeral",
@@ -216,47 +223,48 @@ async function gold(req, res, database) {
                     ]
                 });
             }
-        });
-        return;
-    }
-    
-    try {
-        // console.log(user_id);
-        const amount = Number.parseInt(text, 10);
-        if(Number.isNaN(amount)){
-            axios.post(response_url, {
-                "Content-type": "application/json",
-                "response_type": "ephemeral",
-                "text": '*Critical fail!* Make sure you supply an integer'
-            });
-            return;
-        }
-        database.find({ user_id: user_id }, function (err, docs) {
-            // console.log(docs);
-            if(docs.length !== 0){
-                database.update({ user_id: user_id  }, { user_id: user_id , amount: docs[docs.length-1].amount + amount}, {}, function (err, numReplaced) {});
-                // console.log('Last doc: ', docs[docs.length-1]);
-                const balance = docs[docs.length-1].amount + amount;
+
+            client.close();
+            break;
+        default :
+            try {
+                const amount = text * 1;
+                if(Number.isNaN(amount)){
+                    axios.post(response_url, {
+                        "Content-type": "application/json",
+                        "response_type": "ephemeral",
+                        "text": '*Critical fail!* Make sure you supply an integer'
+                    });
+                    return;
+                }
+            const client = await mongodb.MongoClient.connect(process.env.DATABASE_CONNECTION_STRING, {useUnifiedTopology: true, useNewUrlParser: true });
+            const gold = client.db('dnd_app').collection('gold');
+            const record = await gold.findOne({user_id: user_id});
+            
+            if (record) {
+                await gold.updateOne({ user_id: user_id}, { $set: { amount: record.amount + amount } }, (err, res) => {
+                    if (err) throw err;
+                });
                 axios.post(response_url, {
                     "Content-type": "application/json",
                     "response_type": "ephemeral",
-                    "text": `*Gold: * ${balance}`
+                    "text": `*Gold: * ${record.amount + amount}`
                 });
             } else {
-                const statement = { user_id: user_id,
-                                    amount: amount};
-                database.insert(statement);
-                const balance = amount;
+                gold.insertOne({
+                    user_id: user_id,
+                    amount: amount,
+                });
                 axios.post(response_url, {
                     "Content-type": "application/json",
                     "response_type": "ephemeral",
-                    "text": `*Gold: * ${balance}`
+                    "text": `*Gold: * ${amount}`
                 });
             }
-        });
-    } catch (erorr) {
-        console.error(error);
-        return res.status(400).send(error);
+        } catch (erorr) {
+            console.error(error);
+            return res.status(400).send(error);
+        }              
     }
 }
 
