@@ -30,6 +30,7 @@ async function cast(req, res) {
         const spell_list = await axios.get('http://www.dnd5eapi.co/api/spells/?name=' + search_terms);
         const spell_url = 'http://www.dnd5eapi.co/api/spells/?name=' + spell_list.data.results[0].url;
         const spell_data = await axios.get(spell_url);
+        console.log(spell_data)
         const spell = `*Spell:* ${spell_data.data.name}\n*Description:* ${spell_data.data.desc.join('\n').replace('â€™', '\'')}\n*Higher Levels:* ${spell_data.data.higher_level}\n*Range:* ${spell_data.data.range}\n*Level:* ${spell_data.data.level}\n*Duration:* ${spell_data.data.duration}\n*Concentration:* ${spell_data.data.concentration}\n*Casting Time:* ${spell_data.data.casting_time}\n*Ritual:* ${spell_data.data.ritual}\n*Page:* ${spell_data.data.page}\n`;
         axios.post(response_url, {
             "Content-type": "application/json",
