@@ -28,7 +28,7 @@ async function cast(req, res) {
     try {
         const search_terms = helpers.convertText(text).join('+');
         const spell_list = await axios.get('http://www.dnd5eapi.co/api/spells/?name=' + search_terms);
-        const spell_url = spell_list.data.results[0].url;
+        const spell_url = 'http://www.dnd5eapi.co/api/spells/?name=' + spell_list.data.results[0].url;
         const spell_data = await axios.get(spell_url);
         const spell = `*Spell:* ${spell_data.data.name}\n*Description:* ${spell_data.data.desc.join('\n').replace('â€™', '\'')}\n*Higher Levels:* ${spell_data.data.higher_level}\n*Range:* ${spell_data.data.range}\n*Level:* ${spell_data.data.level}\n*Duration:* ${spell_data.data.duration}\n*Concentration:* ${spell_data.data.concentration}\n*Casting Time:* ${spell_data.data.casting_time}\n*Ritual:* ${spell_data.data.ritual}\n*Page:* ${spell_data.data.page}\n`;
         axios.post(response_url, {
@@ -174,7 +174,7 @@ async function condition(req, res) {
     }
 }
 
-async function gold(req, res, database) {
+async function gold(req, res) {
     try {
         await helpers.verify(req, res);
     } catch (error) {
@@ -223,8 +223,6 @@ async function gold(req, res, database) {
                     ]
                 });
             }
-
-            client.close();
             break;
         default :
             try {
@@ -264,11 +262,49 @@ async function gold(req, res, database) {
         } catch (erorr) {
             console.error(error);
             return res.status(400).send(error);
-        }              
+        } 
     }
+    client.close();             
+}
+
+async function tldr (req, res) {
+    // try {
+    //     await helpers.verify(req, res);
+    // } catch (error) {
+    //     console.error(error);
+    //     return res.status(400).send(error);
+    // }
+    const { text, user_id, response_url } = req.body;
+    const client = await mongodb.MongoClient.connect(process.env.DATABASE_CONNECTION_STRING, {useUnifiedTopology: true, useNewUrlParser: true });
+    const tldr = client.db('dnd_app').collection('tldr');
+    switch (text.toLowerCase()) {
+        case '' :
+            const record = await tldr.findOne();
+            console.log(record);
+            axios.post(response_url, {
+                "Content-type": "application/json",
+                "response_type": "ephemeral",
+                "text": `*tldr: * ${record.description}`
+            });
+            break;
+        case 'list' :
+            console.log('List of all sessions');
+            break;
+        default :
+            console.log(text);
+    }
+    res.send('');
+    axios.post(response_url, {
+        "Content-type": "application/json",
+        "response_type": "ephemeral",
+        "text": '*Critical fail!*'
+    });
+
+    client.close();
 }
 
 exports.cast = cast;
 exports.feat = feat;
 exports.condition = condition;
 exports.gold = gold;
+exports.tldr = tldr;
