@@ -88,7 +88,7 @@ async function feat(req, res) {
             });
             return;
         }
-        const feat_data = await axios.get(url);
+        const feat_data = await axios.get('http://www.dnd5eapi.co' + url);
         const feat = `*Feat:* ${feat_data.data.name}\n*Description:* ${feat_data.data.desc.join('\n').replace('â€™', '\'')}\n`;
         axios.post(response_url, {
             "Content-type": "application/json",
@@ -152,7 +152,7 @@ async function condition(req, res) {
             });
             return
         }
-        const condition_data = await axios.get(url);
+        const condition_data = await axios.get('http://www.dnd5eapi.co' + url);
         const condition = `*Condition:* ${condition_data.data.name}`;
         axios.post(response_url, {
             "Content-type": "application/json",
